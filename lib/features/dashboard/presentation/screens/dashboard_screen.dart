@@ -17,7 +17,10 @@ class DashboardScreen extends StatelessWidget {
           children: [
             const Text(
               'Menu Utama UMKM',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary),
             ),
             const SizedBox(height: 16),
             GridView.count(
@@ -38,12 +41,8 @@ class DashboardScreen extends StatelessWidget {
                   title: 'Mesin Kasir (POS)',
                   icon: Icons.point_of_sale_rounded,
                   color: AppColors.success,
-                  onTap: () {
-                    // Akan dihubungkan di Tahap 4
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Modul POS akan aktif pada Tahap 4')),
-                    );
-                  },
+                  onTap: () => Navigator.pushNamed(
+                      context, '/pos'), // Hubungkan ke halaman POS
                 ),
                 _buildMenuCard(
                   context,
@@ -60,7 +59,11 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuCard(BuildContext context, {required String title, required IconData icon, required Color color, required VoidCallback onTap}) {
+  Widget _buildMenuCard(BuildContext context,
+      {required String title,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -82,7 +85,10 @@ class DashboardScreen extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textPrimary),
               ),
             ],
           ),
