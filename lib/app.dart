@@ -6,6 +6,8 @@ import 'package:quick_pos/features/splash/presentation/screens/splash_screen.dar
 import 'package:quick_pos/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:quick_pos/features/product/presentation/providers/product_provider.dart';
 import 'package:quick_pos/features/product/presentation/screens/product_screen.dart';
+import 'package:quick_pos/features/category/presentation/providers/category_provider.dart'; // Import Category Provider
+import 'package:quick_pos/features/category/presentation/screens/category_screen.dart';
 
 class QuickPosApp extends StatelessWidget {
   const QuickPosApp({super.key});
@@ -14,6 +16,7 @@ class QuickPosApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
       ],
       child: MaterialApp(
@@ -25,6 +28,7 @@ class QuickPosApp extends StatelessWidget {
           '/': (context) => const SplashScreen(),
           '/dashboard': (context) => const DashboardScreen(),
           '/products': (context) => const ProductScreen(),
+          '/categories': (context) => const CategoryScreen(),
         },
       ),
     );

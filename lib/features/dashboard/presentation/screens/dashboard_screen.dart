@@ -45,6 +45,13 @@ class DashboardScreen extends StatelessWidget {
                     );
                   },
                 ),
+                _buildMenuCard(
+                  context,
+                  title: 'Kelola Kategori',
+                  icon: Icons.category_rounded,
+                  color: AppColors.warning,
+                  onTap: () => Navigator.pushNamed(context, '/categories'),
+                ),
               ],
             ),
           ],
