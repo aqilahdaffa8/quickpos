@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quick_pos/features/pos/data/models/cart_item_model.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../pos/presentation/providers/cart_provider.dart';
 import '../../../product/presentation/providers/product_provider.dart';
 import '../providers/transaction_provider.dart';
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import '../../../../core/utils/pdf_service.dart';
+import '../../../../core/utils/thermal_printer_service.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -23,7 +27,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog({
+    required int transactionId,
+    required double totalAmount,
+    required double cashAmount,
+    required double changeAmount,
+    required List<CartItemModel> items,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -36,25 +46,150 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const Icon(Icons.check_circle, color: AppColors.success, size: 80),
               const SizedBox(height: 16),
               const Text('Transaksi Berhasil!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text('Stok otomatis terpotong.', style: TextStyle(color: AppColors.textSecondary)),
+              Text('#TRX-$transactionId', style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Tutup dialog
-                  Navigator.pop(context); // Kembali ke layar POS
-                },
+              
+              // OPSI 1: CETAK BLUETOOTH THERMAL
+              ElevatedButton.icon(
+                onPressed: () => _showPrinterSelectionDialog(
+                  transactionId: transactionId,
+                  totalAmount: totalAmount,
+                  cashAmount: cashAmount,
+                  changeAmount: changeAmount,
+                  items: items,
+                ),
+                icon: const Icon(Icons.print, color: AppColors.surfaceWhite),
+                label: const Text('Cetak Struk Thermal'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryNavy,
                   minimumSize: const Size(double.infinity, 45),
                 ),
-                child: const Text('Selesai'),
+              ),
+              const SizedBox(height: 12),
+
+              // OPSI 2: SHARE DIGITAL PDF
+              OutlinedButton.icon(
+                onPressed: () async {
+                  await PdfService.generateAndShareReceipt(
+                    transactionId: transactionId,
+                    totalAmount: totalAmount,
+                    cashAmount: cashAmount,
+                    changeAmount: changeAmount,
+                    items: items,
+                  );
+                },
+                icon: const Icon(Icons.share, color: AppColors.accentBlue),
+                label: const Text('Bagikan Struk Digital (PDF)'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 45),
+                  side: const BorderSide(color: AppColors.accentBlue),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Tutup dialog
+                  Navigator.pop(context); // Kembali ke POS
+                },
+                child: const Text('Selesai, Kembali ke Kasir', style: TextStyle(color: AppColors.textSecondary)),
               ),
             ],
           ),
         );
       },
     );
+  }
+
+  // --- LOGIKA SCAN BLUETOOTH PRINTER ---
+  void _showPrinterSelectionDialog({
+    required int transactionId,
+    required double totalAmount,
+    required double cashAmount,
+    required double changeAmount,
+    required List<CartItemModel> items,
+  }) async {
+    // Tampilkan loading saat scanning Bluetooth
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final printers = await ThermalPrinterService.getPairedPrinters();
+    
+    if (context.mounted) Navigator.pop(context); // Tutup loading
+
+    if (printers.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak ada printer Bluetooth yang ter-pairing di HP ini.')),
+        );
+      }
+      return;
+    }
+
+    if (context.mounted) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('Pilih Printer Thermal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: printers.length,
+                  itemBuilder: (context, index) {
+                    final printer = printers[index];
+                    return ListTile(
+                      leading: const Icon(Icons.print, color: AppColors.accentBlue),
+                      title: Text(printer.name),
+                      subtitle: Text(printer.macAdress),
+                      onTap: () async {
+                        Navigator.pop(context); // Tutup list printer
+                        
+                        // Eksekusi Koneksi & Cetak
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Menghubungkan ke ${printer.name}...')),
+                        );
+                        
+                        bool isConnected = await ThermalPrinterService.connectPrinter(printer.macAdress);
+                        if (isConnected) {
+                          bool printed = await ThermalPrinterService.printReceipt(
+                            transactionId: transactionId,
+                            totalAmount: totalAmount,
+                            cashAmount: cashAmount,
+                            changeAmount: changeAmount,
+                            items: items,
+                          );
+                          
+                          if (printed && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Struk berhasil dicetak!'), backgroundColor: AppColors.success),
+                            );
+                          }
+                        } else {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Gagal terhubung ke printer.'), backgroundColor: AppColors.error),
+                            );
+                          }
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   void _processPayment() async {
@@ -72,21 +207,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // SIMPAN DATA KERANJANG SEMENTARA SEBELUM DI CLEAR (Untuk PDF)
+    final purchasedItems = List<CartItemModel>.from(cartProvider.items);
+
     final transactionId = await transactionProvider.processCheckout(
       totalAmount: totalAmount,
       cashAmount: _cashAmount,
       changeAmount: changeAmount,
-      cartItems: cartProvider.items,
+      cartItems: purchasedItems,
     );
 
     if (transactionId != null) {
-      // Bersihkan keranjang belanja
       cartProvider.clearCart();
-      // MUAT ULANG DATA PRODUK agar stok di POS langsung update!
-      await productProvider.loadData();
+      await productProvider.loadData(); // Update stok di UI Kasir
       
       if (context.mounted) {
-        _showSuccessDialog();
+        _showSuccessDialog(
+          transactionId: transactionId,
+          totalAmount: totalAmount,
+          cashAmount: _cashAmount,
+          changeAmount: changeAmount,
+          items: purchasedItems,
+        );
       }
     } else {
       if (context.mounted) {
