@@ -42,50 +42,73 @@ class _POSScreenState extends State<POSScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+                        border: Border(
+                            bottom: BorderSide(color: AppColors.cardBorder)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Detail Keranjang', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const Text('Detail Keranjang',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                           TextButton.icon(
                             onPressed: () {
                               cart.clearCart();
                               Navigator.pop(context);
                             },
-                            icon: const Icon(Icons.delete_sweep, color: AppColors.error),
-                            label: const Text('Kosongkan', style: TextStyle(color: AppColors.error)),
+                            icon: const Icon(Icons.delete_sweep,
+                                color: AppColors.error),
+                            label: const Text('Kosongkan',
+                                style: TextStyle(color: AppColors.error)),
                           )
                         ],
                       ),
                     ),
                     Expanded(
                       child: cart.items.isEmpty
-                          ? const Center(child: Text('Keranjang kosong', style: TextStyle(color: AppColors.textSecondary)))
+                          ? const Center(
+                              child: Text('Keranjang kosong',
+                                  style: TextStyle(
+                                      color: AppColors.textSecondary)))
                           : ListView.builder(
                               controller: scrollController,
                               itemCount: cart.items.length,
                               itemBuilder: (context, index) {
                                 final item = cart.items[index];
                                 return ListTile(
-                                  title: Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  subtitle: Text(CurrencyFormatter.format(item.product.sellingPrice)),
+                                  title: Text(item.product.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  subtitle: Text(CurrencyFormatter.format(
+                                      item.product.sellingPrice)),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.remove_circle_outline, color: AppColors.error),
-                                        onPressed: () => cart.decrementItem(item.product),
+                                        icon: const Icon(
+                                            Icons.remove_circle_outline,
+                                            color: AppColors.error),
+                                        onPressed: () =>
+                                            cart.decrementItem(item.product),
                                       ),
-                                      Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                      Text('${item.quantity}',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16)),
                                       IconButton(
-                                        icon: const Icon(Icons.add_circle_outline, color: AppColors.success),
+                                        icon: const Icon(
+                                            Icons.add_circle_outline,
+                                            color: AppColors.success),
                                         onPressed: () {
-                                          if (item.quantity < item.product.stock) {
+                                          if (item.quantity <
+                                              item.product.stock) {
                                             cart.addToCart(item.product);
                                           } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Stok tidak mencukupi!')),
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                  content: Text(
+                                                      'Stok tidak mencukupi!')),
                                             );
                                           }
                                         },
@@ -101,7 +124,10 @@ class _POSScreenState extends State<POSScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.surfaceWhite,
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, -5)),
                         ],
                       ),
                       child: Column(
@@ -110,27 +136,35 @@ class _POSScreenState extends State<POSScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Total Belanja:', style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+                              const Text('Total Belanja:',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.textSecondary)),
                               Text(
                                 CurrencyFormatter.format(cart.totalAmount),
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryNavy),
+                                style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryNavy),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
-                            onPressed: cart.items.isEmpty ? null : () {
-                              Navigator.pop(context);
-                              // TODO: Navigasi ke Halaman Checkout (Tahap 5)
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Menuju Pembayaran... (Tahap 5)')),
-                              );
-                            },
+                            onPressed: cart.items.isEmpty
+                                ? null
+                                : () {
+                                    Navigator.pop(
+                                        context); // Tutup bottom sheet
+                                    Navigator.pushNamed(context,
+                                        '/checkout'); // Navigasi ke Checkout
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.success,
                               minimumSize: const Size(double.infinity, 50),
                             ),
-                            child: const Text('Lanjut ke Pembayaran', style: TextStyle(fontSize: 16)),
+                            child: const Text('Lanjut ke Pembayaran',
+                                style: TextStyle(fontSize: 16)),
                           ),
                         ],
                       ),
@@ -158,11 +192,14 @@ class _POSScreenState extends State<POSScreen> {
           }
 
           if (productProv.products.isEmpty) {
-            return const Center(child: Text('Belum ada produk untuk dijual.', style: TextStyle(color: AppColors.textSecondary)));
+            return const Center(
+                child: Text('Belum ada produk untuk dijual.',
+                    style: TextStyle(color: AppColors.textSecondary)));
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(16).copyWith(bottom: 100), // Padding bawah agar tidak tertutup bottom bar
+            padding: const EdgeInsets.all(16).copyWith(
+                bottom: 100), // Padding bawah agar tidak tertutup bottom bar
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 0.75,
@@ -182,7 +219,9 @@ class _POSScreenState extends State<POSScreen> {
                       },
                 borderRadius: BorderRadius.circular(12),
                 child: Card(
-                  color: isOutOfStock ? AppColors.backgroundLight : AppColors.surfaceWhite,
+                  color: isOutOfStock
+                      ? AppColors.backgroundLight
+                      : AppColors.surfaceWhite,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
@@ -193,7 +232,9 @@ class _POSScreenState extends State<POSScreen> {
                             child: Icon(
                               Icons.shopping_bag,
                               size: 48,
-                              color: isOutOfStock ? AppColors.cardBorder : AppColors.accentBlue,
+                              color: isOutOfStock
+                                  ? AppColors.cardBorder
+                                  : AppColors.accentBlue,
                             ),
                           ),
                         ),
@@ -202,7 +243,9 @@ class _POSScreenState extends State<POSScreen> {
                           product.name,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: isOutOfStock ? AppColors.textMuted : AppColors.textPrimary,
+                            color: isOutOfStock
+                                ? AppColors.textMuted
+                                : AppColors.textPrimary,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -212,21 +255,28 @@ class _POSScreenState extends State<POSScreen> {
                           CurrencyFormatter.format(product.sellingPrice),
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: isOutOfStock ? AppColors.textMuted : AppColors.success,
+                            color: isOutOfStock
+                                ? AppColors.textMuted
+                                : AppColors.success,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isOutOfStock ? AppColors.error.withOpacity(0.1) : AppColors.primaryNavy.withOpacity(0.1),
+                            color: isOutOfStock
+                                ? AppColors.error.withOpacity(0.1)
+                                : AppColors.primaryNavy.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             isOutOfStock ? 'Habis' : 'Stok: ${product.stock}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: isOutOfStock ? AppColors.error : AppColors.primaryNavy,
+                              color: isOutOfStock
+                                  ? AppColors.error
+                                  : AppColors.primaryNavy,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -240,7 +290,7 @@ class _POSScreenState extends State<POSScreen> {
           );
         },
       ),
-      
+
       // BOTTOM BAR KERANJANG BELANJA
       bottomSheet: Consumer<CartProvider>(
         builder: (context, cart, child) {
@@ -268,13 +318,18 @@ class _POSScreenState extends State<POSScreen> {
                         ),
                         child: Text(
                           '${cart.totalItems}',
-                          style: const TextStyle(color: AppColors.surfaceWhite, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: AppColors.surfaceWhite,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 12),
                       const Text(
                         'Keranjang',
-                        style: TextStyle(color: AppColors.surfaceWhite, fontSize: 16, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: AppColors.surfaceWhite,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -282,10 +337,14 @@ class _POSScreenState extends State<POSScreen> {
                     children: [
                       Text(
                         CurrencyFormatter.format(cart.totalAmount),
-                        style: const TextStyle(color: AppColors.surfaceWhite, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: AppColors.surfaceWhite,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.keyboard_arrow_up, color: AppColors.surfaceWhite),
+                      const Icon(Icons.keyboard_arrow_up,
+                          color: AppColors.surfaceWhite),
                     ],
                   )
                 ],

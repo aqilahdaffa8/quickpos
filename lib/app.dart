@@ -10,6 +10,8 @@ import 'package:quick_pos/features/category/presentation/providers/category_prov
 import 'package:quick_pos/features/category/presentation/screens/category_screen.dart';
 import 'package:quick_pos/features/pos/presentation/providers/cart_provider.dart';
 import 'package:quick_pos/features/pos/presentation/screens/pos_screen.dart';
+import 'package:quick_pos/features/transaction/presentation/providers/transaction_provider.dart';
+import 'package:quick_pos/features/transaction/presentation/screens/checkout_screen.dart';
 
 class QuickPosApp extends StatelessWidget {
   const QuickPosApp({super.key});
@@ -20,7 +22,8 @@ class QuickPosApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()), // DAFTARKAN CART PROVIDER
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
       ],
       child: MaterialApp(
         title: 'QuickPOS UMKM',
@@ -32,7 +35,8 @@ class QuickPosApp extends StatelessWidget {
           '/dashboard': (context) => const DashboardScreen(),
           '/categories': (context) => const CategoryScreen(),
           '/products': (context) => const ProductScreen(),
-          '/pos': (context) => const POSScreen(), // DAFTARKAN ROUTE POS
+          '/pos': (context) => const POSScreen(),
+          '/checkout': (context) => const CheckoutScreen(),
         },
       ),
     );
