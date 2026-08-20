@@ -12,6 +12,8 @@ import 'package:quick_pos/features/pos/presentation/providers/cart_provider.dart
 import 'package:quick_pos/features/pos/presentation/screens/pos_screen.dart';
 import 'package:quick_pos/features/transaction/presentation/providers/transaction_provider.dart';
 import 'package:quick_pos/features/transaction/presentation/screens/checkout_screen.dart';
+import 'package:quick_pos/features/report/presentation/providers/report_provider.dart';
+import 'package:quick_pos/features/report/presentation/screens/report_screen.dart';
 
 class QuickPosApp extends StatelessWidget {
   const QuickPosApp({super.key});
@@ -24,6 +26,7 @@ class QuickPosApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => ReportProvider()),
       ],
       child: MaterialApp(
         title: 'QuickPOS UMKM',
@@ -37,6 +40,7 @@ class QuickPosApp extends StatelessWidget {
           '/products': (context) => const ProductScreen(),
           '/pos': (context) => const POSScreen(),
           '/checkout': (context) => const CheckoutScreen(),
+          '/reports': (context) => const ReportScreen(),
         },
       ),
     );

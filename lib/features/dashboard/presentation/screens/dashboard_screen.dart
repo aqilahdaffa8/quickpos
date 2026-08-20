@@ -51,6 +51,13 @@ class DashboardScreen extends StatelessWidget {
                   color: AppColors.warning,
                   onTap: () => Navigator.pushNamed(context, '/categories'),
                 ),
+                _buildMenuCard(
+                  context,
+                  title: 'Laporan Penjualan',
+                  icon: Icons.bar_chart_rounded,
+                  color: AppColors.primaryBlue,
+                  onTap: () => Navigator.pushNamed(context, '/reports'),
+                ),
               ],
             ),
           ],
