@@ -9,11 +9,11 @@ class CategoryRepository {
     return result.map((e) => CategoryModel.fromMap(e)).toList();
   }
 
-  Future<int> insertCategory(String name) async {
+  Future<int> insertCategory(String name, String iconName) async {
     final db = await DbHelper.instance.database;
     return await db.insert(
       DbHelper.tableCategories,
-      CategoryModel(name: name, createdAt: DateTime.now().toIso8601String()).toMap(),
+      CategoryModel(name: name, iconName: iconName, createdAt: DateTime.now().toIso8601String()).toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }

@@ -25,9 +25,9 @@ class CategoryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addCategory(String name) async {
+  Future<bool> addCategory(String name, String iconName) async {
     try {
-      await _repository.insertCategory(name);
+      await _repository.insertCategory(name, iconName);
       await loadCategories();
       return true;
     } catch (e) {

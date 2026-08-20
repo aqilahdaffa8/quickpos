@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/icon_mapper.dart';
 import '../../data/models/category_model.dart';
 import '../providers/category_provider.dart';
 
@@ -20,56 +21,105 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   void _showCategoryForm({CategoryModel? category}) {
     final nameController = TextEditingController(text: category?.name ?? '');
+    String selectedIcon = category?.iconName ?? 'restaurant'; // Default ikon pertama
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surfaceWhite,
-          title: Text(
-            category == null ? 'Tambah Kategori' : 'Edit Kategori',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Nama Kategori'),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal', style: TextStyle(color: AppColors.textSecondary)),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.isEmpty) return;
-
-                final provider = context.read<CategoryProvider>();
-                bool success;
-
-                if (category == null) {
-                  success = await provider.addCategory(nameController.text);
-                } else {
-                  final updatedCategory = CategoryModel(
-                    id: category.id,
-                    name: nameController.text,
-                    createdAt: category.createdAt,
-                  );
-                  success = await provider.updateCategory(updatedCategory);
-                }
-
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'Kategori berhasil disimpan' : 'Gagal menyimpan kategori'),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.surfaceWhite,
+              title: Text(
+                category == null ? 'Tambah Kategori' : 'Edit Kategori',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: 'Nama Kategori'),
+                      autofocus: true,
                     ),
-                  );
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
+                    const SizedBox(height: 16),
+                    const Text('Pilih Ikon:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 8),
+                    
+                    // Grid Pilihan Ikon
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: IconMapper.availableIcons.entries.map((entry) {
+                        final isSelected = selectedIcon == entry.key;
+                        return InkWell(
+                          onTap: () {
+                            setDialogState(() {
+                              selectedIcon = entry.key;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.accentBlue.withOpacity(0.2) : AppColors.backgroundLight,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected ? AppColors.accentBlue : AppColors.cardBorder,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Icon(
+                              entry.value,
+                              color: isSelected ? AppColors.accentBlue : AppColors.textSecondary,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (nameController.text.isEmpty) return;
+
+                    final provider = context.read<CategoryProvider>();
+                    bool success;
+
+                    if (category == null) {
+                      success = await provider.addCategory(nameController.text, selectedIcon);
+                    } else {
+                      final updatedCategory = CategoryModel(
+                        id: category.id,
+                        name: nameController.text,
+                        iconName: selectedIcon,
+                        createdAt: category.createdAt,
+                      );
+                      success = await provider.updateCategory(updatedCategory);
+                    }
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success ? 'Kategori berhasil disimpan' : 'Gagal menyimpan kategori'),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -110,7 +160,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       color: AppColors.accentBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.category_outlined, color: AppColors.accentBlue),
+                    child: Icon(
+                      IconMapper.getIcon(category.iconName),
+                      color: AppColors.accentBlue,
+                    ),
                   ),
                   title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                   trailing: Row(

@@ -42,10 +42,11 @@ class DbHelper {
   Future<void> _onCreate(Database db, int version) async {
     // 1. Table Categories
     await db.execute('''
-      CREATE TABLE $tableCategories (
+      CREATE TABLE $tableCategories(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        created_at TEXT NOT NULL
+        name TEXT,
+        icon_name TEXT, -- KOLOM BARU UNTUK NAMA IKON
+        created_at TEXT
       )
     ''');
 
