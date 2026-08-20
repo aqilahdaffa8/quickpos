@@ -38,18 +38,18 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 _buildMenuCard(
                   context,
+                  title: 'Kelola Kategori',
+                  icon: Icons.category_rounded,
+                  color: AppColors.warning,
+                  onTap: () => Navigator.pushNamed(context, '/categories'),
+                ),
+                _buildMenuCard(
+                  context,
                   title: 'Mesin Kasir (POS)',
                   icon: Icons.point_of_sale_rounded,
                   color: AppColors.success,
                   onTap: () => Navigator.pushNamed(
                       context, '/pos'), // Hubungkan ke halaman POS
-                ),
-                _buildMenuCard(
-                  context,
-                  title: 'Kelola Kategori',
-                  icon: Icons.category_rounded,
-                  color: AppColors.warning,
-                  onTap: () => Navigator.pushNamed(context, '/categories'),
                 ),
                 _buildMenuCard(
                   context,

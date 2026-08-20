@@ -51,17 +51,16 @@ class DbHelper {
 
     // 2. Table Products (Relasi ke Categories)
     await db.execute('''
-      CREATE TABLE $tableProducts (
+      CREATE TABLE $tableProducts(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_id INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        purchase_price REAL NOT NULL,
-        selling_price REAL NOT NULL,
-        stock INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL,
-        FOREIGN KEY (category_id) REFERENCES $tableCategories (id) 
-          ON DELETE RESTRICT 
-          ON UPDATE CASCADE
+        category_id INTEGER,
+        name TEXT,
+        image_path TEXT, -- INI KOLOM BARU KITA
+        purchase_price REAL,
+        selling_price REAL,
+        stock INTEGER,
+        created_at TEXT,
+        FOREIGN KEY (category_id) REFERENCES $tableCategories (id) ON DELETE RESTRICT
       )
     ''');
 

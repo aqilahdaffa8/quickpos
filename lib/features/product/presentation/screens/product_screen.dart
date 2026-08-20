@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/product_model.dart';
@@ -19,109 +23,190 @@ class _ProductScreenState extends State<ProductScreen> {
     Future.microtask(() => context.read<ProductProvider>().loadData());
   }
 
+  void _showAddCategoryDialog() {
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceWhite,
+          title: const Text('Tambah Kategori Baru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: nameController,
+            decoration: const InputDecoration(labelText: 'Nama Kategori'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isNotEmpty) {
+                  final provider = context.read<ProductProvider>();
+                  await provider.addCategory(nameController.text);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Kategori berhasil ditambahkan')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showProductForm({ProductModel? product}) {
     final provider = context.read<ProductProvider>();
     final nameController = TextEditingController(text: product?.name ?? '');
     final purchaseController = TextEditingController(text: product != null ? product.purchasePrice.toString() : '');
     final sellingController = TextEditingController(text: product != null ? product.sellingPrice.toString() : '');
     final stockController = TextEditingController(text: product != null ? product.stock.toString() : '');
-    
+
     int? selectedCategory = product?.categoryId ?? (provider.categories.isNotEmpty ? provider.categories.first.id : null);
+    String? selectedImagePath = product?.imagePath;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surfaceWhite,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product == null ? 'Tambah Produk Baru' : 'Edit Produk',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Nama Produk'),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<int>(
-                  value: selectedCategory,
-                  decoration: const InputDecoration(labelText: 'Kategori'),
-                  items: provider.categories.map((cat) {
-                    return DropdownMenuItem(
-                      value: cat.id,
-                      child: Text(cat.name),
-                    );
-                  }).toList(),
-                  onChanged: (val) => selectedCategory = val,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: purchaseController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Harga Beli (Rp)'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: sellingController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Harga Jual (Rp)'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: stockController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Stok Awal'),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (nameController.text.isEmpty || selectedCategory == null) return;
-                    
-                    final newProduct = ProductModel(
-                      id: product?.id,
-                      categoryId: selectedCategory!,
-                      name: nameController.text,
-                      purchasePrice: double.tryParse(purchaseController.text) ?? 0,
-                      sellingPrice: double.tryParse(sellingController.text) ?? 0,
-                      stock: int.tryParse(stockController.text) ?? 0,
-                      createdAt: product?.createdAt ?? DateTime.now().toIso8601String(),
-                    );
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            
+            // FUNGSI UNTUK MENGAMBIL GAMBAR DARI GALERI
+            Future<void> pickImage() async {
+              final ImagePicker picker = ImagePicker();
+              final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
 
-                    bool success;
-                    if (product == null) {
-                      success = await provider.addProduct(newProduct);
-                    } else {
-                      success = await provider.updateProduct(newProduct);
-                    }
+              if (image != null) {
+                final directory = await getApplicationDocumentsDirectory();
+                final String newPath = '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                final File newImage = await File(image.path).copy(newPath);
 
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(success ? 'Produk berhasil disimpan' : 'Gagal menyimpan produk')),
-                      );
-                    }
-                  },
-                  child: const Text('Simpan Produk'),
+                setModalState(() {
+                  selectedImagePath = newImage.path;
+                });
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20, right: 20, top: 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(product == null ? 'Tambah Produk Baru' : 'Edit Produk', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    const SizedBox(height: 16),
+
+                    // --- WIDGET PEMILIH GAMBAR ---
+                    Center(
+                      child: GestureDetector(
+                        onTap: pickImage,
+                        child: Container(
+                          width: 100, height: 100,
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundLight,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.cardBorder),
+                            image: selectedImagePath != null
+                                ? DecorationImage(image: FileImage(File(selectedImagePath!)), fit: BoxFit.cover)
+                                : null,
+                          ),
+                          child: selectedImagePath == null
+                              ? const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_a_photo, color: AppColors.textSecondary),
+                                    SizedBox(height: 4),
+                                    Text('Foto', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                  ],
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
+                    const SizedBox(height: 12),
+
+                    Consumer<ProductProvider>(
+                      builder: (context, prov, child) {
+                        if (selectedCategory != null && !prov.categories.any((c) => c.id == selectedCategory)) {
+                          selectedCategory = prov.categories.isNotEmpty ? prov.categories.first.id : null;
+                        }
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<int>(
+                                value: selectedCategory,
+                                decoration: const InputDecoration(labelText: 'Kategori'),
+                                items: prov.categories.map((cat) => DropdownMenuItem(value: cat.id, child: Text(cat.name))).toList(),
+                                onChanged: (val) => setModalState(() => selectedCategory = val),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              decoration: BoxDecoration(color: AppColors.accentBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                              child: IconButton(
+                                onPressed: _showAddCategoryDialog,
+                                icon: const Icon(Icons.add, color: AppColors.accentBlue), tooltip: 'Tambah Kategori',
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+                    TextField(controller: purchaseController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Harga Beli (Rp)')),
+                    const SizedBox(height: 12),
+                    TextField(controller: sellingController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Harga Jual (Rp)')),
+                    const SizedBox(height: 12),
+                    TextField(controller: stockController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Stok Awal')),
+                    const SizedBox(height: 24),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (nameController.text.isEmpty || selectedCategory == null) return;
+
+                        final newProduct = ProductModel(
+                          id: product?.id,
+                          categoryId: selectedCategory!,
+                          name: nameController.text,
+                          imagePath: selectedImagePath,
+                          purchasePrice: double.tryParse(purchaseController.text) ?? 0,
+                          sellingPrice: double.tryParse(sellingController.text) ?? 0,
+                          stock: int.tryParse(stockController.text) ?? 0,
+                          createdAt: product?.createdAt ?? DateTime.now().toIso8601String(),
+                        );
+
+                        bool success = product == null ? await provider.addProduct(newProduct) : await provider.updateProduct(newProduct);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success ? 'Berhasil disimpan' : 'Gagal menyimpan')));
+                        }
+                      },
+                      child: const Text('Simpan Produk'),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+              ),
+            );
+          }
         );
       },
     );
@@ -164,7 +249,6 @@ class _ProductScreenState extends State<ProductScreen> {
             itemCount: provider.products.length,
             itemBuilder: (context, index) {
               final product = provider.products[index];
-              // Indikator Stok Berbasis Warna
               Color stockColor = AppColors.success;
               if (product.stock == 0) {
                 stockColor = AppColors.error;
@@ -179,15 +263,26 @@ class _ProductScreenState extends State<ProductScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
+                        
+                        // --- WIDGET GAMBAR PRODUK DI LIST ---
                         Container(
-                          width: 48,
-                          height: 48,
+                          width: 56, height: 56,
                           decoration: BoxDecoration(
                             color: AppColors.backgroundLight,
                             borderRadius: BorderRadius.circular(10),
+                            image: product.imagePath != null
+                                ? DecorationImage(
+                                    image: FileImage(File(product.imagePath!)),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
                           ),
-                          child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primaryNavy),
+                          child: product.imagePath == null
+                              ? const Icon(Icons.inventory_2_outlined, color: AppColors.textSecondary)
+                              : null,
                         ),
+                        // ------------------------------------
+
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(

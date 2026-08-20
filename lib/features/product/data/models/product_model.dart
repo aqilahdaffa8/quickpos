@@ -1,8 +1,9 @@
 class ProductModel {
   final int? id;
   final int categoryId;
-  final String? categoryName; // Join field untuk tampilan UI
+  final String? categoryName;
   final String name;
+  final String? imagePath; // <-- PROPERTI BARU
   final double purchasePrice;
   final double sellingPrice;
   final int stock;
@@ -13,6 +14,7 @@ class ProductModel {
     required this.categoryId,
     this.categoryName,
     required this.name,
+    this.imagePath, // <-- PROPERTI BARU
     required this.purchasePrice,
     required this.sellingPrice,
     required this.stock,
@@ -25,6 +27,7 @@ class ProductModel {
       categoryId: map['category_id'] as int,
       categoryName: map['category_name'] as String?,
       name: map['name'] as String,
+      imagePath: map['image_path'] as String?, // <-- MAPPING BARU
       purchasePrice: (map['purchase_price'] as num).toDouble(),
       sellingPrice: (map['selling_price'] as num).toDouble(),
       stock: map['stock'] as int,
@@ -37,6 +40,7 @@ class ProductModel {
       if (id != null) 'id': id,
       'category_id': categoryId,
       'name': name,
+      'image_path': imagePath, // <-- MAPPING BARU
       'purchase_price': purchasePrice,
       'selling_price': sellingPrice,
       'stock': stock,
