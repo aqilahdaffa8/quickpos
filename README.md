@@ -87,11 +87,3 @@ lib/
 ## 🤝 Kontribusi
 
 Jika Anda ingin berkontribusi, menemukan *bug*, atau memiliki permintaan fitur, silakan buat *Pull Request* atau buka *Issue* baru.
-
----
-
-*Didesain dan dibangun dengan ❤️ oleh [Nama Anda/Username Anda]*
-
-```
-
-```
