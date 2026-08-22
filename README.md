@@ -7,13 +7,6 @@
 
 **QuickPOS** adalah aplikasi kasir pintar (Point of Sale) *offline-first* yang dirancang khusus untuk UMKM, ritel, dan bisnis F&B. Dibangun menggunakan **Flutter** dengan pendekatan *Clean Architecture* dan performa tinggi berkat eksekusi database lokal menggunakan **SQLite**.
 
-<p align="center">
-  <!-- TODO: Ganti URL gambar di bawah dengan screenshot aplikasi Anda nanti -->
-  <img src="https://via.placeholder.com/250x500.png?text=Splash+Screen" width="200"/>
-  <img src="https://via.placeholder.com/250x500.png?text=Dashboard" width="200"/>
-  <img src="https://via.placeholder.com/250x500.png?text=POS+Screen" width="200"/>
-  <img src="https://via.placeholder.com/250x500.png?text=Analytics" width="200"/>
-</p>
 
 ## ✨ Fitur Utama (Key Features)
 
