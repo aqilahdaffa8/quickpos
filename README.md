@@ -43,5 +43,62 @@
 
 ### Langkah Instalasi
 1. *Clone* repositori ini:
-   ```bash
-   git clone [https://github.com/username-anda/quick_pos.git](https://github.com/username-anda/quick_pos.git)
+```bash
+git clone [https://github.com/username-anda/quick_pos.git](https://github.com/username-anda/quick_pos.git)
+
+```
+
+2. Masuk ke direktori proyek:
+```bash
+cd quick_pos
+
+```
+
+
+3. Unduh semua *dependencies*:
+```bash
+flutter pub get
+
+```
+
+
+4. Jalankan aplikasi:
+```bash
+flutter run
+
+```
+
+
+
+*(Catatan: Aplikasi tidak akan berfungsi penuh di Web Browser karena keterbatasan isolasi hardware Bluetooth dan SQLite native).*
+
+## 🏗️ Struktur Arsitektur
+
+Proyek ini mengadaptasi prinsip **Feature-First Architecture** dan **Clean Architecture** ringan untuk memastikan skalabilitas kode:
+
+```text
+lib/
+ ├── core/             # Utilitas inti (DB Helper, Formatters, Print Services, App Colors)
+ ├── features/         # Modul independen berbasis fitur
+ │   ├── category/     # Modul Manajemen Kategori
+ │   ├── dashboard/    # Modul Dashboard Utama
+ │   ├── pos/          # Modul Mesin Kasir & Keranjang
+ │   ├── product/      # Modul Manajemen Produk & Gambar
+ │   ├── report/       # Modul Analitik SQL & Grafik Laporan
+ │   ├── splash/       # Modul Splash Screen
+ │   └── transaction/  # Modul Checkout, SQL Batch, & Bukti Bayar
+ └── main.dart         # Entry point aplikasi
+
+```
+
+## 🤝 Kontribusi
+
+Jika Anda ingin berkontribusi, menemukan *bug*, atau memiliki permintaan fitur, silakan buat *Pull Request* atau buka *Issue* baru.
+
+---
+
+*Didesain dan dibangun dengan ❤️ oleh [Nama Anda/Username Anda]*
+
+```
+
+```
